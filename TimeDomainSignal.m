@@ -85,6 +85,18 @@ methods
         end
     end
     
+    function [] = resample(self, desiredSampleRate)
+        validateattributes(desiredSampleRate, ...
+            {'numeric'}, ...
+            {'scalar', 'integer', 'positive', 'nonempty', 'nonnan', ...
+             'finite', 'real'} ...
+            );
+        
+        self.Signal = resample(self.Signal, desiredSampleRate, self.SampleRate);
+        self.SampleRate = desiredSampleRate;
+    end
+    
+    
     function [val] = get.TimeVector(self)
         val = (0 : self.NumSamples-1).' / self.SampleRate;
     end
