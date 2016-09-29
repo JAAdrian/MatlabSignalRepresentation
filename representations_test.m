@@ -9,24 +9,31 @@ clear;
 close all;
 
 %% Instantiate a Simple Time Domain Signal
-data = load('handel');
+[signal, fs] = audioread('speech.wav');
 
-obj = TimeDomainSignal(data.y, data.Fs);
+obj = Signal.TimeDomainSignal(signal, fs);
 
 figure;
 obj.plot([2 5]);
 
 %% Instantiate a Simple Frequency Domain Signal
-objTime = TimeDomainSignal([1, -0.95].', 16e3);
-
-objFreq = FrequencyDomainSignal(objTime);
+objTime = Signal.TimeDomainSignal([1, -0.95].', 16e3);
+objFreq = Signal.FrequencyDomainSignal(objTime);
 
 figure;
 objFreq.plot();
 
 %% Instantiate Frequency Domain Signal from Signal Vector
-objFreq = FrequencyDomainSignal(data.y, data.Fs);
+objFreq = Signal.FrequencyDomainSignal(signal, fs);
 
+%% Instantiate an STFT object
+objTime = Signal.TimeDomainSignal(signal, fs);
+
+objSTFT = Signal.STFT(objTime);
+objSTFT.BlockSize = 32e-3;
+objSTFT.Overlap   = 0.5;
+
+objSTFT.plot();
 
 
 % End of file: representations_test.m
