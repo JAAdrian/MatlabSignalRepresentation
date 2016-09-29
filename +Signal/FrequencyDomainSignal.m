@@ -1,4 +1,4 @@
-classdef FrequencyDomainSignal < AbstractSignal
+classdef FrequencyDomainSignal < Signal.AbstractClasses.AbstractFrequencySignal
 %FREQUENCYDOMAINSIGNAL <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
@@ -19,51 +19,29 @@ classdef FrequencyDomainSignal < AbstractSignal
 %
 
 
-properties (Access = protected)
-    TimeDomainSignal;
-end
-
-properties (Access = protected, Dependent)
-    FrequencyVector;
-    Window;
-    WindowedSignal;
-end
-
-properties
+properties (Access = public)
     FftSize = 512;
     WindowFunction = @(x) ones(x, 1);
-    
-    NumSamples;
-    Duration;
-    
-    NumChannels;
 end
 
+properties (Access = protected, Dependent);
+    Window;
+end
 
 
 methods
-    function [self] = FrequencyDomainSignal(signal, sampleRate)
-        if ~nargin
-            return;
-        end
-        narginchk(1, 2)
-
-        switch class(signal)
-            case 'TimeDomainSignal'
-                % do nothing
-            case 'double'
-                signal = TimeDomainSignal(signal, sampleRate);
-            otherwise
-                error('Signal class not recognized!');
-        end 
-        
-        self.TimeDomainSignal = signal.Signal;
-        self.SampleRate  = signal.SampleRate;
-        
-        self.computeFreqSignal();
+    function [self] = FrequencyDomainSignal(varargin)
+        self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
+    end
+    
+    function [] = compute(self)
+        freqSignal  = fft(self.WindowedSignal, self.FftSize);
+        self.Signal = freqSignal(1:end/2+1, :);
     end
     
     function [ha] = plot(self)
+        self.compute();
+        
         ha = axes;
         plot(...
             ha, ...
@@ -86,33 +64,10 @@ methods
         end
     end
     
-    function [val] = get.WindowedSignal(self)
-        val = bsxfun(@times, self.TimeDomainSignal, self.Window);
-    end
-    
-    function [val] = get.FrequencyVector(self)
-        val = linspace(0, self.SampleRate/2, self.FftSize/2+1).';
-    end
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.NumSamples);
     end
-    
-    
-    
-    function [val] = get.NumSamples(self)
-        val = size(self.TimeDomainSignal, 1);
-    end
-    
-    function [val] = get.Duration(self)
-        val = self.NumSamples / self.SampleRate;
-    end
-    
-    function [val] = get.NumChannels(self)
-        val = size(self.TimeDomainSignal, 2);
-    end
-    
-    
     
     function [] = set.WindowFunction(self, windowFunction)
         validateattributes(windowFunction, ...
@@ -121,25 +76,26 @@ methods
             );
         
         self.WindowFunction = windowFunction;
-        self.computeFreqSignal()
+        self.compute();
     end
     
     function [] = set.FftSize(self, fftSize)
         validateattributes(fftSize, ...
             {'numeric'}, ...
             {'scalar', 'positive', 'even', ...
-             'nonempty', 'nonnan', 'real', 'finite'} ...
+            'nonempty', 'nonnan', 'real', 'finite'} ...
             );
         
         self.FftSize = fftSize;
-        self.computeFreqSignal()
+        self.compute();
     end
 end
 
+
+
 methods (Access = protected)
-    function [] = computeFreqSignal(self)
-        freqSignal  = fft(self.WindowedSignal, self.FftSize);
-        self.Signal = freqSignal(1:end/2+1, :);
+    function [yesNo] = AmIReady(self) %#ok<MANU>
+        yesNo = true;
     end
 end
 

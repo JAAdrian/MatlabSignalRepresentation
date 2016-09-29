@@ -1,4 +1,4 @@
-classdef TimeDomainSignal < AbstractSignal
+classdef TimeDomainSignal < Signal.AbstractClasses.AbstractSignal
 %TIMEDOMAINSIGNAL <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
@@ -55,6 +55,10 @@ methods
         
         self.Signal     = signalVector;
         self.SampleRate = sampleRate; 
+    end
+    
+    function [] = compute(self) %#ok<MANU>
+        return;
     end
     
     function [ha] = plot(self, duration)
@@ -116,6 +120,11 @@ methods
     end
 end
 
+methods (Access = protected)
+    function [yesNo] = AmIReady(self) %#ok<MANU>
+        yesNo = true;
+    end
+end
 
 end
 

@@ -33,9 +33,13 @@ end
 
 
 methods (Abstract)
+    [signal] = compute(self);
     [hf, ha] = plot(self);
 end
 
+methods (Access = protected, Abstract)
+    [yesNo] = AmIReady(self);
+end
 
 end
 
