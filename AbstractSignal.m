@@ -36,12 +36,6 @@ methods (Abstract)
     [hf, ha] = plot(self);
 end
 
-methods
-    
-    
-    
-end
-
 
 end
 
