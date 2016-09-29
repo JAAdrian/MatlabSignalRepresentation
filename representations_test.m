@@ -25,6 +25,8 @@ figure;
 objFreq.plot();
 
 %% Instantiate Frequency Domain Signal from Signal Vector
-% objFreq = FrequencyDomainSignal(data.y, data.Fs);
+objFreq = FrequencyDomainSignal(data.y, data.Fs);
+
+
 
 % End of file: representations_test.m
