@@ -1,13 +1,13 @@
-classdef TimeDomainSignal < Signal.AbstractClasses.AbstractSignal
-%TIMEDOMAINSIGNAL <purpose in one line!>
+classdef TimeDomain < Signal.AbstractClasses.AbstractSignal
+%TimeDomain <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
 %
-% TimeDomainSignal Properties:
+% TimeDomain Properties:
 %	propA - <description>
 %	propB - <description>
 %
-% TimeDomainSignal Methods:
+% TimeDomain Methods:
 %	doThis - <description>
 %	doThat - <description>
 %
@@ -32,7 +32,7 @@ end
 
 
 methods
-    function [self] = TimeDomainSignal(signalVector, sampleRate)
+    function [self] = TimeDomain(signalVector, sampleRate)
         if ~nargin
             return;
         end
@@ -139,4 +139,4 @@ end
 end
 
 
-% End of file: TimeDomainSignal.m
+% End of file: TimeDomain.m

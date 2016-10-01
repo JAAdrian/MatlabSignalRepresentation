@@ -53,10 +53,10 @@ methods
         narginchk(1, 2)
 
         switch class(signal)
-            case 'Signal.TimeDomainSignal'
+            case 'Signal.TimeDomain'
                 % do nothing
             case 'double'
-                signal = Signal.TimeDomainSignal(signal, sampleRate);
+                signal = Signal.TimeDomain(signal, sampleRate);
             otherwise
                 error('Signal class not recognized!');
         end 

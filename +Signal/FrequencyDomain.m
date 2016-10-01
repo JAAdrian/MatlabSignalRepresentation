@@ -1,13 +1,13 @@
-classdef FrequencyDomainSignal < Signal.AbstractClasses.AbstractFrequencySignal
-%FREQUENCYDOMAINSIGNAL <purpose in one line!>
+classdef FrequencyDomain < Signal.AbstractClasses.AbstractFrequencySignal
+%FREQUENCYDOMAIN <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
 %
-% FrequencyDomainSignal Properties:
+% FrequencyDomain Properties:
 %	propA - <description>
 %	propB - <description>
 %
-% FrequencyDomainSignal Methods:
+% FrequencyDomain Methods:
 %	doThis - <description>
 %	doThat - <description>
 %
@@ -30,7 +30,7 @@ end
 
 
 methods
-    function [self] = FrequencyDomainSignal(varargin)
+    function [self] = FrequencyDomain(varargin)
         self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
     end
     
@@ -106,4 +106,4 @@ end
 
 
 
-% End of file: FrequencyDomainSignal.m
+% End of file: FrequencyDomain.m
