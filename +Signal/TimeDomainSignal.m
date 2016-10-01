@@ -63,7 +63,7 @@ methods
     
     function [ha] = plot(self, duration)
         if nargin < 2 || isempty(duration)
-            duration = [0, self.Duration];
+            duration = [0, self.Duration - 1];
         end
         validateattributes(duration, ...
             {'numeric'}, ...
@@ -75,6 +75,7 @@ methods
         
         ha = axes;
         plot(ha, self.TimeVector(duration), self.Signal(duration, :));
+        axis tight;
         
         title('Waveform of the Time Domain Signal');
         xlabel('Time in s');
