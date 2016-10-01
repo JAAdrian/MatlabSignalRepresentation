@@ -90,6 +90,15 @@ methods
         end
     end
     
+    function [] = sound(self)
+        sound(self.Signal, self.SampleRate);
+    end
+    
+    function [] = soundsc(self)
+        soundsc(self.Signal, self.SampleRate);
+    end
+    
+    
     function [] = resample(self, desiredSampleRate)
         validateattributes(desiredSampleRate, ...
             {'numeric'}, ...

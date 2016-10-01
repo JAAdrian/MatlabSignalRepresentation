@@ -35,6 +35,9 @@ end
 methods (Abstract)
     [signal] = compute(self);
     [hf, ha] = plot(self);
+    
+    [] = sound(self);
+    [] = soundsc(self);
 end
 
 methods (Access = protected, Abstract)

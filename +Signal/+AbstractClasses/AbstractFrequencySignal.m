@@ -65,6 +65,16 @@ methods
         self.SampleRate = signal.SampleRate;
     end
     
+    function [] = sound(self)
+        sound(self.TimeDomainSignal, self.SampleRate);
+    end
+    
+    function [] = soundsc(self)
+        soundsc(self.TimeDomainSignal, self.SampleRate);
+    end
+    
+    
+    
     function [val] = get.WindowedSignal(self)
         val = bsxfun(@times, self.TimeDomainSignal, self.Window);
     end
