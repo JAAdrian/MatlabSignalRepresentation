@@ -49,6 +49,7 @@ methods
             20*log10(max(abs(self.Signal), eps)) ...
             );
         grid on;
+        xlim([self.FrequencyVector(1), self.FrequencyVector(end)]);
         
         title('Spectrum of the Frequency Domain Signal');
         xlabel('Frequency in Hz');
