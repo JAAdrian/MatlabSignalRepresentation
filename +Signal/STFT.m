@@ -32,6 +32,7 @@ properties (Access = protected, Dependent)
     RemainingSamples;
     
     Window;
+    PowerWeightingWindow;
 end
 
 properties (Access = public)
@@ -76,11 +77,8 @@ methods
         
         ha = axes;
         
-        powerWeightingWindow = 2 * ones(self.FftSize/2+1, 1);
-        powerWeightingWindow([1, end]) = 1;
-        
         PSD = abs(self.Signal).^2;
-        PSD = (diag(sparse(powerWeightingWindow)) * PSD) / ...
+        PSD = (diag(sparse(self.PowerWeightingWindow)) * PSD) / ...
             (self.SampleRate * norm(self.Window)^2);
         
         imagesc(...
@@ -122,6 +120,11 @@ methods
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.BlockSizeSamples);
+    end
+    
+    function [val] = get.PowerWeightingWindow(self)
+        val = 2 * ones(self.FftSize/2+1, 1);
+        val([1, end]) = 1;
     end
     
     
