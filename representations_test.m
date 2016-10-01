@@ -14,7 +14,7 @@ close all;
 obj = Signal.TimeDomainSignal(signal, fs);
 
 figure;
-obj.plot([2 5]);
+obj.plot();
 
 %% Instantiate a Simple Frequency Domain Signal
 objTime = Signal.TimeDomainSignal([1, -0.95].', 16e3);
@@ -26,6 +26,9 @@ objFreq.plot();
 %% Instantiate Frequency Domain Signal from Signal Vector
 objFreq = Signal.FrequencyDomainSignal(signal, fs);
 
+figure;
+objFreq.plot();
+
 %% Instantiate an STFT object
 objTime = Signal.TimeDomainSignal(signal, fs);
 
@@ -33,7 +36,21 @@ objSTFT = Signal.STFT(objTime);
 objSTFT.BlockSize = 32e-3;
 objSTFT.Overlap   = 0.5;
 
+figure;
 objSTFT.plot();
+
+%% Instantiate a PSD object
+objTime = Signal.TimeDomainSignal(signal, fs);
+
+objPSD = Signal.PSD(objTime);
+objPSD.BlockSize = 32e-3;
+objPSD.Overlap   = 0.5;
+
+figure;
+objPSD.plot();
+
+
+
 
 
 % End of file: representations_test.m
