@@ -19,11 +19,6 @@ classdef FrequencyDomain < Signal.AbstractClasses.AbstractFrequencySignal
 %
 
 
-properties (Access = public)
-    FftSize = 512;
-    WindowFunction = @(x) ones(x, 1);
-end
-
 properties (Access = protected, Dependent);
     Window;
 end
@@ -34,14 +29,12 @@ methods
         self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
     end
     
-    function [] = compute(self)
-        freqSignal  = fft(self.WindowedSignal, self.FftSize);
+    function [] = compute(self, signalIn)
+        freqSignal  = fft(signalIn .* self.Window, self.FftSize);
         self.Signal = freqSignal(1:end/2+1, :);
     end
     
     function [ha] = plot(self)
-        self.compute();
-        
         ha = axes;
         plot(...
             ha, ...
@@ -68,27 +61,6 @@ methods
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.NumSamples);
-    end
-    
-    function [] = set.WindowFunction(self, windowFunction)
-        validateattributes(windowFunction, ...
-            {'function_handle'}, ...
-            {'nonempty'} ...
-            );
-        
-        self.WindowFunction = windowFunction;
-        self.compute();
-    end
-    
-    function [] = set.FftSize(self, fftSize)
-        validateattributes(fftSize, ...
-            {'numeric'}, ...
-            {'scalar', 'positive', 'even', ...
-            'nonempty', 'nonnan', 'real', 'finite'} ...
-            );
-        
-        self.FftSize = fftSize;
-        self.compute();
     end
 end
 

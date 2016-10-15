@@ -19,29 +19,24 @@ classdef AbstractFrequencySignal < Signal.AbstractClasses.AbstractSignal
 %
 
 
-properties (Access = protected)
-    TimeDomainSignal;
-end
-
 properties (Access = protected, Dependent)
     FrequencyVector;
-    WindowedSignal;
 end
 
 properties (Access = protected, Abstract)
     Window;
 end
 
-properties (Access = public, Dependent)
+properties (SetAccess = protected, GetAccess = public)
     NumSamples;
     Duration;
     
     NumChannels;
 end
 
-properties (Access = public, Abstract)
-    FftSize;
-    WindowFunction;
+properties (Access = public)
+    FftSize = 512;
+    WindowFunction = @(x) ones(x, 1);
 end
 
 
@@ -51,6 +46,12 @@ methods
             return;
         end
         narginchk(1, 2)
+        
+%         validateattributes();
+        
+%         if nargin > 1
+%             validateattributes();
+%         end
 
         switch class(signal)
             case 'Signal.TimeDomain'
@@ -59,10 +60,15 @@ methods
                 signal = Signal.TimeDomain(signal, sampleRate);
             otherwise
                 error('Signal class not recognized!');
-        end 
+        end
         
-        self.TimeDomainSignal = signal.Signal;
         self.SampleRate = signal.SampleRate;
+        
+        self.NumSamples  = signal.NumSamples;
+        self.Duration    = signal.Duration;
+        self.NumChannels = signal.NumChannels;
+        
+        self.compute(signal.Signal);
     end
     
     function [] = sound(self)
@@ -73,26 +79,27 @@ methods
         soundsc(self.TimeDomainSignal, self.SampleRate);
     end
     
-    
-    
-    function [val] = get.WindowedSignal(self)
-        val = bsxfun(@times, self.TimeDomainSignal, self.Window);
-    end
-    
     function [val] = get.FrequencyVector(self)
         val = linspace(0, self.SampleRate/2, self.FftSize/2+1).';
     end
     
-    function [val] = get.NumSamples(self)
-        val = size(self.TimeDomainSignal, 1);
+    function [] = set.WindowFunction(self, windowFunction)
+        validateattributes(windowFunction, ...
+            {'function_handle'}, ...
+            {'nonempty'} ...
+            );
+        
+        self.WindowFunction = windowFunction;
     end
     
-    function [val] = get.Duration(self)
-        val = self.NumSamples / self.SampleRate;
-    end
-    
-    function [val] = get.NumChannels(self)
-        val = size(self.TimeDomainSignal, 2);
+    function [] = set.FftSize(self, fftSize)
+        validateattributes(fftSize, ...
+            {'numeric'}, ...
+            {'scalar', 'positive', 'even', ...
+            'nonempty', 'nonnan', 'real', 'finite'} ...
+            );
+        
+        self.FftSize = fftSize;
     end
 end
 
