@@ -24,7 +24,7 @@ properties (Access = public)
     SampleRate;
 end
 
-properties (Access = public, Abstract)
+properties (SetAccess = protected, GetAccess = public, Abstract)
     NumChannels;
     Duration;
     NumSamples;
