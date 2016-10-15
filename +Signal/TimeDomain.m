@@ -19,7 +19,7 @@ classdef TimeDomain < Signal.AbstractClasses.AbstractSignal
 %
 
 
-properties (Access = public)
+properties (SetAccess = protected, GetAccess = public)
     NumSamples;
     Duration;
     
