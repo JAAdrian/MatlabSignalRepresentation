@@ -1,4 +1,6 @@
-classdef STFT < Signal.AbstractClasses.AbstractFrequencySignal
+classdef STFT < ...
+        Signal.AbstractClasses.AbstractFrequencySignal & ...
+        Signal.AbstractClasses.AbstractBlockedSignal
 %STFT <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
@@ -24,24 +26,9 @@ properties (Access = protected)
 end
 
 properties (Access = protected, Dependent)
-    BlockSizeSamples;
-    OverlapSamples;
-    
-    HopSize;
-    NumBlocks;
-    RemainingSamples;
-    
-    Window;
     PowerWeightingWindow;
 end
 
-properties (Access = public)
-    FftSize = 512;
-    WindowFunction = @(x) hann(x, 'periodic');
-    
-    BlockSize;
-    Overlap;
-end
 
 
 methods
@@ -97,30 +84,9 @@ methods
     end
     
     
-    function [val] = get.BlockSizeSamples(self)
-        val = round(self.BlockSize * self.SampleRate);
-    end
     
-    function [val] = get.OverlapSamples(self)
-        val = round(self.BlockSizeSamples * self.Overlap);
-    end
     
-    function [val] = get.HopSize(self)
-        val = self.BlockSizeSamples - self.OverlapSamples;
-    end
     
-    function [val] = get.NumBlocks(self)
-        % pad the last block with zeros
-        val = ceil((self.NumSamples - self.OverlapSamples) / self.HopSize);
-    end
-    
-    function [val] = get.RemainingSamples(self)
-        val = rem(self.NumSamples - self.OverlapSamples, self.HopSize);
-    end
-    
-    function [val] = get.Window(self)
-        val = self.WindowFunction(self.BlockSizeSamples);
-    end
     
     function [val] = get.PowerWeightingWindow(self)
         val = 2 * ones(self.FftSize/2+1, 1);
@@ -129,44 +95,9 @@ methods
     
     
     
-    function [] = set.BlockSize(self, val)
-        validateattributes(val, ...
-            {'numeric'}, ...
-            {'scalar', 'positive', 'nonempty', 'nonnan', 'finite', 'real'} ...
-            );
-        
-        self.BlockSize = val;
-        self.updateFftSize();
-    end
     
-    function [] = set.Overlap(self, val)
-        validateattributes(val, ...
-            {'numeric'}, ...
-            {'scalar', 'nonnegative', '>=', 0, '<=', 1, ...
-             'nonempty', 'nonnan', 'finite', 'real'} ...
-            );
-        
-        self.Overlap = val;
-    end
     
-    function [] = set.WindowFunction(self, windowFunction)
-        validateattributes(windowFunction, ...
-            {'function_handle'}, ...
-            {'nonempty'} ...
-            );
-        
-        self.WindowFunction = windowFunction;
-    end
     
-    function [] = set.FftSize(self, fftSize)
-        validateattributes(fftSize, ...
-            {'numeric'}, ...
-            {'scalar', 'positive', 'even', ...
-            'nonempty', 'nonnan', 'real', 'finite'} ...
-            );
-        
-        self.FftSize = fftSize;
-    end
 end
 
 
