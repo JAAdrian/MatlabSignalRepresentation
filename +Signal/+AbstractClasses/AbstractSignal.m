@@ -33,7 +33,7 @@ end
 
 
 methods (Abstract)
-    [signal] = compute(self);
+    [] = compute(self);
     [hf, ha] = plot(self);
     
     [] = sound(self);
