@@ -8,9 +8,9 @@
 clear;
 close all;
 
-%% Instantiate a Simple Time Domain Signal
 [signal, fs] = audioread('speech.wav');
 
+%% Instantiate a Simple Time Domain Signal
 obj = Signal.TimeDomain(signal, fs);
 
 figure;
