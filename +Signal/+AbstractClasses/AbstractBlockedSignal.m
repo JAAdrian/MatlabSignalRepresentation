@@ -34,17 +34,11 @@ end
 properties (Access = public)
     BlockSize;
     Overlap;
-    
-    NumChannels;
-    Duration;
-    NumSamples;
 end
 
 
 
 methods
-    
-    
     function [val] = get.BlockSizeSamples(self)
         val = round(self.BlockSize * self.SampleRate);
     end
@@ -73,7 +67,6 @@ methods
             );
         
         self.BlockSize = val;
-        self.updateFftSize();
     end
     
     function [] = set.Overlap(self, val)
@@ -88,8 +81,10 @@ methods
 end
 
 
-methods (Access = private)
-
+methods (Access = protected)
+    function [out] = WOLA(self)
+        
+    end
 end
 
 
