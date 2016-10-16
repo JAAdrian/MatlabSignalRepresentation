@@ -32,36 +32,27 @@ end
 
 
 methods
-    function [self] = TimeDomain(signalOrObject, sampleRate)
-        if ~nargin
-            return;
-        end
-        narginchk(1, 2);
-        validateattributes(signalOrObject, ...
-            {'numeric', 'Signal.AbstractClasses.AbstractSignal'}, ...
-            {'2d', 'nonempty', 'nonsparse', 'finite', 'nonnan'}, ...
-            mfilename, ...
-            'Signal Vector or Matrix', ...
-            1 ...
-            );
+    function [self] = TimeDomain(varargin)
+        self@Signal.AbstractClasses.AbstractSignal(varargin{:});
         
-        if nargin > 1
-            validateattributes(sampleRate, ...
-                {'numeric'}, ...
-                {'scalar', 'integer', 'positive', 'nonempty', 'nonnan', ...
-                'finite', 'real'}, ...
-                mfilename, ...
-                'Sampling Rate in Hz', ...
-                2 ...
-                );
+        switch class(varargin{1})
+            case 'Signal.TimeDomain'
+                self = varargin{1};
+            case 'Signal.FrequencyDomain'
+                objFreq = varargin{1};
+                
+                self.SampleRate = objFreq.SampleRate;
+                self.Signal = freq2time(objFreq.Signal, objFreq.FftSize);
+            case 'Signal.STFT'
+                error('Not yet implemented');
+            case 'Signal.PSD'
+                error('Not yet implemented');
+            case 'double'
+                self.Signal     = varargin{1};
+                self.SampleRate = varargin{2};
+            otherwise
+                error('Signal class not recognized!');
         end
-        
-        self.Signal     = signalOrObject;
-        self.SampleRate = sampleRate; 
-    end
-    
-    function [] = compute(self) %#ok<MANU>
-        return;
     end
     
     function [ha] = plot(self, duration)
@@ -139,6 +130,11 @@ methods (Access = protected)
     end
 end
 
+end
+
+function [timeSignal] = freq2time(freqSignal, fftSize)
+freqSignal = [freqSignal; conj(freqSignal(end-1:-1:2, :))];
+timeSignal = ifft(freqSignal, fftSize, 'symmetric');
 end
 
 
