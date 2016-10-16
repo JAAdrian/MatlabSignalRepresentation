@@ -1,4 +1,4 @@
-classdef FrequencyDomain < Signal.AbstractClasses.AbstractFrequencySignal
+classdef FrequencyDomain < Signal.AbstractClasses.AbstractSignal
 %FREQUENCYDOMAIN <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
@@ -19,6 +19,22 @@ classdef FrequencyDomain < Signal.AbstractClasses.AbstractFrequencySignal
 %
 
 
+properties (Access = protected, Dependent)
+    FrequencyVector;
+end
+
+properties (SetAccess = protected, GetAccess = public)
+    NumSamples;
+    Duration;
+    
+    NumChannels;
+end
+
+properties (Access = public)
+    FftSize = 512;
+    WindowFunction = @(x) ones(x, 1);
+end
+
 properties (Access = protected, Dependent);
     Window;
 end
@@ -26,12 +42,35 @@ end
 
 methods
     function [self] = FrequencyDomain(varargin)
-        self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
-    end
-    
-    function [] = compute(self, signalIn)
-        freqSignal  = fft(signalIn .* self.Window, self.FftSize);
-        self.Signal = freqSignal(1:end/2+1, :);
+        self@Signal.AbstractClasses.AbstractSignal(varargin{:});
+        
+        switch class(varargin{1})
+            case 'Signal.TimeDomain'
+                objTime = varargin{1};
+                
+                self.time2freq(objTime);
+            case 'Signal.FrequencyDomain'
+                % do nothing
+                
+            case 'Signal.STFT'
+                error('Not yet implemented');
+                
+            case 'Signal.PSD'
+                error('Not yet implemented');
+                
+            case 'double'
+                self.Signal = varargin{1};
+                self.SampleRate = varargin{2};
+                
+                [self.NumSamples, self.NumChannels] = size(self.Signal);
+                
+                self.FftSize = (self.NumSamples - 1) * 2;
+                self.Duration = self.FftSize / self.SampleRate;
+            otherwise
+                error('Signal class not recognized!');
+        end
+        
+        
     end
     
     function [ha] = plot(self)
@@ -58,17 +97,70 @@ methods
         end
     end
     
+    function [] = sound(self)
+        objTime = Signal.TimeDomain(self);
+        objTime.sound();
+    end
+    
+    function [] = soundsc(self)
+        objTime = Signal.TimeDomain(self);
+        objTime.soundsc();
+    end
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.NumSamples);
+    end
+    
+    function [val] = get.FrequencyVector(self)
+        val = linspace(0, self.SampleRate/2, self.FftSize/2+1).';
+    end
+    
+    function [] = set.WindowFunction(self, windowFunction)
+        validateattributes(windowFunction, ...
+            {'function_handle'}, ...
+            {'nonempty'} ...
+            );
+        
+        objTime = Signal.TimeDomain(self);
+        
+        self.WindowFunction = windowFunction;
+        self.time2freq(objTime);
+    end
+    
+    function [] = set.FftSize(self, fftSize)
+        validateattributes(fftSize, ...
+            {'numeric'}, ...
+            {'scalar', 'positive', 'even', ...
+            'nonempty', 'nonnan', 'real', 'finite'} ...
+            );
+        
+        objTime = Signal.TimeDomain(self);
+        
+        self.FftSize = fftSize;
+        self.time2freq(objTime);
     end
 end
 
 
 
 methods (Access = protected)
-    function [yesNo] = AmIReady(self) %#ok<MANU>
-        yesNo = true;
+    function [yesNo] = AmIReady(self)
+        yesNo = ...
+            ~isempty(self.FftSize) && ...
+            ~isempty(self.WindowFunction);
+    end
+    
+    function [] = time2freq(self, objTime)
+        self.SampleRate = objTime.SampleRate;
+        
+        self.NumSamples  = objTime.NumSamples;
+        self.Duration    = objTime.Duration;
+        self.NumChannels = objTime.NumChannels;
+        
+        self.Signal = ...
+            fft(diag(sparse(self.Window)) * objTime.Signal, self.FftSize);
+        
+        self.Signal = self.Signal(1:end/2+1, :);
     end
 end
 
