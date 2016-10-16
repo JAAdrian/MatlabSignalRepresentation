@@ -66,7 +66,7 @@ methods
     
     function [ha] = plot(self, duration)
         if nargin < 2 || isempty(duration)
-            duration = [0, self.Duration - 1];
+            duration = [0, self.Duration];
         end
         validateattributes(duration, ...
             {'numeric'}, ...
@@ -74,7 +74,7 @@ methods
              'nonempty', 'nonnan', 'finite', 'real'} ...
             )
         duration = round(duration * self.SampleRate);
-        duration = (duration(1) : duration(end)) + 1;
+        duration = (duration(1) : duration(end)-1) + 1;
         
         ha = axes;
         plot(ha, self.TimeVector(duration), self.Signal(duration, :));
