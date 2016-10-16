@@ -158,7 +158,7 @@ methods (Access = protected)
         self.NumChannels = objTime.NumChannels;
         
         self.Signal = ...
-            fft(diag(sparse(self.Window)) * objTime.Signal, self.FftSize);
+            fft(diag(sparse(self.Window)) * objTime.Signal, self.FftSize, 1);
         
         self.Signal = self.Signal(1:end/2+1, :);
     end

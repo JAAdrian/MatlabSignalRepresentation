@@ -121,7 +121,7 @@ methods (Access = protected)
         self.SampleRate = objFreq.SampleRate;
         
         freqSignal = [objFreq.Signal; conj(objFreq.Signal(end-1:-1:2, :))];
-        self.Signal = ifft(freqSignal, objFreq.FftSize, 'symmetric');
+        self.Signal = ifft(freqSignal, objFreq.FftSize, 1, 'symmetric');
         
         [self.NumSamples, self.NumChannels] = size(self.Signal);
         self.Duration = self.NumSamples / self.SampleRate;
