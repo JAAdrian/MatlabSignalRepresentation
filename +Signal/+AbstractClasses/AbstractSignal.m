@@ -60,7 +60,6 @@ methods
 end
 
 methods (Abstract)
-    [] = compute(self);
     [hf, ha] = plot(self);
     
     [] = sound(self);
