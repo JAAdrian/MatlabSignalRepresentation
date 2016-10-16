@@ -39,6 +39,10 @@ end
 
 
 methods
+    function [self] = AbstractBlockedSignal(varargin)
+        self@Signal.AbstractClasses.AbstractSignal(varargin{:});
+    end
+    
     function [val] = get.BlockSizeSamples(self)
         val = round(self.BlockSize * self.SampleRate);
     end
