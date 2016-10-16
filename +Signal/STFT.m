@@ -1,5 +1,5 @@
 classdef STFT < ...
-        Signal.AbstractClasses.AbstractFrequencySignal & ...
+        Signal.FrequencyDomain & ...
         Signal.AbstractClasses.AbstractBlockedSignal
 %STFT <purpose in one line!>
 % -------------------------------------------------------------------------
@@ -21,10 +21,6 @@ classdef STFT < ...
 %
 
 
-properties (Access = protected)
-    TimeVector;
-end
-
 properties (Access = protected, Dependent)
     PowerWeightingWindow;
 end
@@ -33,35 +29,34 @@ end
 
 methods
     function [self] = STFT(varargin)
-        self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
-    end
-    
-    function [] = compute(self)
-        idxColumns = (0 : self.NumBlocks-1) * self.HopSize;
-        idxRows    = (1 : self.BlockSizeSamples).';
+        self@Signal.FrequencyDomain(varargin{:});
+        self@Signal.AbstractClasses.AbstractBlockedSignal(varargin{:});
         
-        % pad with zeros
-        signal = [...
-            self.TimeDomainSignal; ...
-            zeros(self.HopSize - self.RemainingSamples, 1) ...
-            ];
-        
-        idxBlockedSignal = ...
-            idxRows(:, ones(1, self.NumBlocks)) + ...
-            idxColumns(ones(self.BlockSizeSamples, 1), :);
-        blockedSignal = signal(idxBlockedSignal);
-        
-        spectrogramData = ...
-            fft(diag(sparse(self.Window)) * blockedSignal, self.FftSize, 1);
-        
-        self.Signal     = spectrogramData(1:end/2+1, :);
-        self.TimeVector = ...
-            (idxColumns + self.BlockSizeSamples/2).' / self.SampleRate;
+        switch class(varargin{1})
+            case 'Signal.TimeDomain'
+                objTime = varargin{1};
+                
+                self.time2STFT(objTime);
+            case 'Signal.FrequencyDomain'
+                error('Not yet implemented');
+            case 'Signal.STFT'
+                error('Not yet implemented');
+            case 'Signal.PSD'
+                error('Not yet implemented');
+            case 'double'
+                self.Signal = varargin{1};
+                self.SampleRate = varargin{2};
+                
+                [self.NumSamples, self.NumBlocks] = size(self.Signal);
+                
+                self.FftSize = (self.NumSamples - 1) * 2;
+                self.Duration = self.FftSize / self.SampleRate;
+            otherwise
+                error('Signal class not recognized!');
+        end
     end
     
     function [ha] = plot(self)
-        self.compute();
-        
         ha = axes;
         
         PSD = abs(self.Signal).^2;
@@ -84,20 +79,10 @@ methods
     end
     
     
-    
-    
-    
-    
     function [val] = get.PowerWeightingWindow(self)
         val = 2 * ones(self.FftSize/2+1, 1);
         val([1, end]) = 1;
     end
-    
-    
-    
-    
-    
-    
 end
 
 
@@ -108,8 +93,27 @@ methods (Access = protected)
             ~isempty(self.BlockSize);
     end
     
-    function [] = updateFftSize(self)
-        self.FftSize = pow2(nextpow2(self.BlockSizeSamples));
+    function [] = time2STFT(self, objTime)
+        idxColumns = (0 : self.NumBlocks-1) * self.HopSize;
+        idxRows    = (1 : self.BlockSizeSamples).';
+        
+        % pad with zeros
+        timeDomainSignal = [...
+            objTime.Signal; ...
+            zeros(self.HopSize - self.RemainingSamples, 1) ...
+            ];
+        
+        idxBlockedSignal = ...
+            idxRows(:, ones(1, self.NumBlocks)) + ...
+            idxColumns(ones(self.BlockSizeSamples, 1), :);
+        blockedSignal = timeDomainSignal(idxBlockedSignal);
+        
+        spectrogramData = ...
+            fft(diag(sparse(self.Window)) * blockedSignal, self.FftSize, 1);
+        
+        self.Signal     = spectrogramData(1:end/2+1, :);
+        self.TimeVector = ...
+            (idxColumns + self.BlockSizeSamples/2).' / self.SampleRate;
     end
 end
 
