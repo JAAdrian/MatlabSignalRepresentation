@@ -8,29 +8,57 @@
 clear;
 close all;
 
-[signal, fs] = audioread('speech.wav');
+[signal, sampleRate] = audioread('speech.wav');
 
 %% Instantiate a Simple Time Domain Signal
-obj = Signal.TimeDomain(signal, fs);
+obj = Signal.TimeDomain(signal, sampleRate);
 
 figure;
 obj.plot();
 
 %% Instantiate a Simple Frequency Domain Signal
-objTime = Signal.TimeDomain([1, -0.95].', 16e3);
+objTime = Signal.TimeDomain([[1, -0.95].', [1, 0.95].'], 16e3);
 objFreq = Signal.FrequencyDomain(objTime);
+objFreq.FftSize = 2048;
 
 figure;
 objFreq.plot();
 
 %% Instantiate Frequency Domain Signal from Signal Vector
-objFreq = Signal.FrequencyDomain(signal, fs);
+sampleRate = 16e3;
+
+slope = 256;
+omega = linspace(0, pi, 257).';
+phase = -slope * omega;
+
+freqSignal = ones(257, 1) .* exp(1j * phase);
+freqSignal([1, end]) = abs(freqSignal([1, end]));
+freqSignal(150:end) = 0;
+
+objFreq = Signal.FrequencyDomain(freqSignal, sampleRate);
 
 figure;
 objFreq.plot();
 
+%% Go From Frequency to Time Domain
+sampleRate = 16e3;
+
+slope = 256;
+omega = linspace(0, pi, 257).';
+phase = -slope * omega;
+
+freqSignal = ones(257, 1) .* exp(1j * phase);
+freqSignal([1, end]) = abs(freqSignal([1, end]));
+freqSignal(25:end) = 0;
+
+objFreq = Signal.FrequencyDomain(freqSignal, sampleRate);
+objTime = Signal.TimeDomain(objFreq);
+
+figure;
+objTime.plot();
+
 %% Instantiate an STFT object
-objTime = Signal.TimeDomain(signal, fs);
+objTime = Signal.TimeDomain(signal, sampleRate);
 
 objSTFT = Signal.STFT(objTime);
 objSTFT.BlockSize = 32e-3;
@@ -40,7 +68,7 @@ figure;
 objSTFT.plot();
 
 %% Instantiate a PSD object
-objTime = Signal.TimeDomain(signal, fs);
+objTime = Signal.TimeDomain(signal, sampleRate);
 
 objPSD = Signal.PSD(objTime);
 objPSD.BlockSize = 32e-3;
