@@ -50,14 +50,11 @@ methods
                 
                 self.time2freq(objTime);
             case 'Signal.FrequencyDomain'
-                % do nothing
-                
+                self = varargin{1};
             case 'Signal.STFT'
                 error('Not yet implemented');
-                
             case 'Signal.PSD'
                 error('Not yet implemented');
-                
             case 'double'
                 self.Signal = varargin{1};
                 self.SampleRate = varargin{2};
@@ -69,8 +66,6 @@ methods
             otherwise
                 error('Signal class not recognized!');
         end
-        
-        
     end
     
     function [ha] = plot(self)
