@@ -41,8 +41,7 @@ methods
             case 'Signal.FrequencyDomain'
                 objFreq = varargin{1};
                 
-                self.SampleRate = objFreq.SampleRate;
-                self.Signal = freq2time(objFreq.Signal, objFreq.FftSize);
+                self.freq2time(objFreq);
             case 'Signal.STFT'
                 error('Not yet implemented');
             case 'Signal.PSD'
@@ -50,6 +49,9 @@ methods
             case 'double'
                 self.Signal     = varargin{1};
                 self.SampleRate = varargin{2};
+                
+                [self.NumSamples, self.NumChannels] = size(self.Signal);
+                self.Duration = self.NumSamples / self.SampleRate;
             otherwise
                 error('Signal class not recognized!');
         end
@@ -108,33 +110,24 @@ methods
     function [val] = get.TimeVector(self)
         val = (0 : self.NumSamples-1).' / self.SampleRate;
     end
-    
-    
-    
-    function [val] = get.NumSamples(self)
-        val = size(self.Signal, 1);
-    end
-    
-    function [val] = get.Duration(self)
-        val = self.NumSamples / self.SampleRate;
-    end
-    
-    function [val] = get.NumChannels(self)
-        val = size(self.Signal, 2);
-    end
 end
 
 methods (Access = protected)
     function [yesNo] = AmIReady(self) %#ok<MANU>
         yesNo = true;
     end
+    
+    function [] = freq2time(self, objFreq)
+        self.SampleRate = objFreq.SampleRate;
+        
+        freqSignal = [objFreq.Signal; conj(objFreq.Signal(end-1:-1:2, :))];
+        self.Signal = ifft(freqSignal, objFreq.FftSize, 'symmetric');
+        
+        [self.NumSamples, self.NumChannels] = size(self.Signal);
+        self.Duration = self.NumSamples / self.SampleRate;
+    end    
 end
 
-end
-
-function [timeSignal] = freq2time(freqSignal, fftSize)
-freqSignal = [freqSignal; conj(freqSignal(end-1:-1:2, :))];
-timeSignal = ifft(freqSignal, fftSize, 'symmetric');
 end
 
 
