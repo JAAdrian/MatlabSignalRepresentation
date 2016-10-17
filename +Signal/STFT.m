@@ -1,5 +1,5 @@
 classdef STFT < ...
-        Signal.FrequencyDomain & ...
+        Signal.AbstractClasses.AbstractFrequencySignal & ...
         Signal.AbstractClasses.AbstractBlockedSignal
 %STFT <purpose in one line!>
 % -------------------------------------------------------------------------
@@ -21,15 +21,32 @@ classdef STFT < ...
 %
 
 
+properties (SetAccess = protected, GetAccess = public)
+    NumSamples;
+    Duration;
+    
+    NumChannels;
+end
+
 properties (Access = protected, Dependent)
+    Window;
     PowerWeightingWindow;
+end
+
+properties (Access = protected)
+    TimeVector;
+end
+
+properties (Access = public)
+    FftSize = 512;;
+    WindowFunction = @(x) hann(x, 'periodic');
 end
 
 
 
 methods
     function [self] = STFT(varargin)
-        self@Signal.FrequencyDomain(varargin{:});
+        self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
         self@Signal.AbstractClasses.AbstractBlockedSignal(varargin{:});
         
         switch class(varargin{1})
@@ -78,6 +95,45 @@ methods
         ylabel('Frequency in Hz');
     end
     
+    function [] = sound(self)
+        objTime = Signal.TimeDomain(self);
+        objTime.sound();
+    end
+    
+    function [] = soundsc(self)
+        objTime = Signal.TimeDomain(self);
+        objTime.soundsc();
+    end
+    
+    function [val] = get.Window(self)
+        val = self.WindowFunction(self.BlockSizeSamples);
+    end
+    
+    function [] = set.WindowFunction(self, windowFunction)
+        validateattributes(windowFunction, ...
+            {'function_handle'}, ...
+            {'nonempty'} ...
+            );
+        
+        objTime = Signal.TimeDomain(self);
+        
+        self.WindowFunction = windowFunction;
+        self.time2freq(objTime);
+    end
+    
+    function [] = set.FftSize(self, fftSize)
+        validateattributes(fftSize, ...
+            {'numeric'}, ...
+            {'scalar', 'positive', 'even', ...
+            'nonempty', 'nonnan', 'real', 'finite'} ...
+            );
+        
+        objTime = Signal.TimeDomain(self);
+        
+        self.FftSize = fftSize;
+        self.time2freq(objTime);
+    end
+    
     
     function [val] = get.PowerWeightingWindow(self)
         val = 2 * ones(self.FftSize/2+1, 1);
@@ -94,6 +150,12 @@ methods (Access = protected)
     end
     
     function [] = time2STFT(self, objTime)
+        self.SampleRate = objTime.SampleRate;
+        
+        self.NumSamples  = objTime.NumSamples;
+        self.Duration    = objTime.Duration;
+        self.NumChannels = objTime.NumChannels;
+        
         idxColumns = (0 : self.NumBlocks-1) * self.HopSize;
         idxRows    = (1 : self.BlockSizeSamples).';
         
