@@ -47,4 +47,6 @@ end
 
 end
 
+
+
 % End of file: AbstractFrequencySignal.m
