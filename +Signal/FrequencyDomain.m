@@ -1,4 +1,4 @@
-classdef FrequencyDomain < Signal.AbstractClasses.AbstractSignal
+classdef FrequencyDomain < Signal.AbstractClasses.AbstractFrequencySignal
 %FREQUENCYDOMAIN <purpose in one line!>
 % -------------------------------------------------------------------------
 % <Detailed description of the function>
@@ -19,10 +19,6 @@ classdef FrequencyDomain < Signal.AbstractClasses.AbstractSignal
 %
 
 
-properties (Access = protected, Dependent)
-    FrequencyVector;
-end
-
 properties (SetAccess = protected, GetAccess = public)
     NumSamples;
     Duration;
@@ -42,7 +38,7 @@ end
 
 methods
     function [self] = FrequencyDomain(varargin)
-        self@Signal.AbstractClasses.AbstractSignal(varargin{:});
+        self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
         
         switch class(varargin{1})
             case 'Signal.TimeDomain'
@@ -104,10 +100,6 @@ methods
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.NumSamples);
-    end
-    
-    function [val] = get.FrequencyVector(self)
-        val = linspace(0, self.SampleRate/2, self.FftSize/2+1).';
     end
     
     function [] = set.WindowFunction(self, windowFunction)
