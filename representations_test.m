@@ -61,8 +61,10 @@ objTime.plot();
 objTime = Signal.TimeDomain(signal, sampleRate);
 
 objSTFT = Signal.STFT(objTime);
+
+% not yet working
 objSTFT.BlockSize = 32e-3;
-objSTFT.Overlap   = 0.5;
+objSTFT.Overlap   = 0.9;
 
 figure;
 objSTFT.plot();
