@@ -19,12 +19,12 @@ classdef AbstractBlockedSignal < Signal.AbstractClasses.AbstractSignal
 %
 
 
-properties (SetAccess = protected, GetAccess = public)
+properties (SetAccess = protected, GetAccess = public, Dependent)
     HopSize;
     NumBlocks;
 end
 
-properties (Access = protected)
+properties (Access = protected, Dependent)
     BlockSizeSamples;
     OverlapSamples;
     
@@ -32,8 +32,8 @@ properties (Access = protected)
 end
 
 properties (Access = public)
-    BlockSize;
-    Overlap;
+    BlockSize = 32e-3;
+    Overlap = 0.5;
 end
 
 
