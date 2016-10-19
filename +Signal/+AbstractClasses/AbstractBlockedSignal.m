@@ -20,7 +20,7 @@ classdef AbstractBlockedSignal < Signal.AbstractClasses.AbstractSignal
 
 
 properties (SetAccess = protected, GetAccess = public, Dependent)
-    HopSize;
+    HopSizeSamples;
     NumBlocks;
 end
 
@@ -31,9 +31,9 @@ properties (Access = protected, Dependent)
     RemainingSamples;
 end
 
-properties (Access = public)
-    BlockSize = 32e-3;
-    Overlap = 0.5;
+properties (Access = public, Abstract)
+    BlockSize;
+    Overlap;
 end
 
 
@@ -51,36 +51,17 @@ methods
         val = round(self.BlockSizeSamples * self.Overlap);
     end
     
-    function [val] = get.HopSize(self)
+    function [val] = get.HopSizeSamples(self)
         val = self.BlockSizeSamples - self.OverlapSamples;
     end
     
     function [val] = get.NumBlocks(self)
         % pad the last block with zeros
-        val = ceil((self.NumSamples - self.OverlapSamples) / self.HopSize);
+        val = ceil((self.NumSamples - self.OverlapSamples) / self.HopSizeSamples);
     end
     
     function [val] = get.RemainingSamples(self)
-        val = rem(self.NumSamples - self.OverlapSamples, self.HopSize);
-    end
-    
-    function [] = set.BlockSize(self, val)
-        validateattributes(val, ...
-            {'numeric'}, ...
-            {'scalar', 'positive', 'nonempty', 'nonnan', 'finite', 'real'} ...
-            );
-        
-        self.BlockSize = val;
-    end
-    
-    function [] = set.Overlap(self, val)
-        validateattributes(val, ...
-            {'numeric'}, ...
-            {'scalar', 'nonnegative', '>=', 0, '<=', 1, ...
-             'nonempty', 'nonnan', 'finite', 'real'} ...
-            );
-        
-        self.Overlap = val;
+        val = rem(self.NumSamples - self.OverlapSamples, self.HopSizeSamples);
     end
 end
 
