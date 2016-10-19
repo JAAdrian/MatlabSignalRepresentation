@@ -43,6 +43,21 @@ methods
         self@Signal.AbstractClasses.AbstractSignal(varargin{:});
     end
     
+    function [unblockedSignal] = WOLA(self, blockedSignal)
+        blockIndex = 1:self.BlockSizeSamples;
+        
+        totalLength = self.NumBlocks * self.HopSizeSamples + self.OverlapSamples;
+        unblockedSignal = zeros(totalLength, 1);
+        for iBlock = 1:self.NumBlocks
+            unblockedSignal(blockIndex) = ...
+                unblockedSignal(blockIndex) + ...
+                blockedSignal(:, iBlock);
+           
+            blockIndex = blockIndex + self.HopSizeSamples;
+        end
+    end
+    
+    
     function [val] = get.BlockSizeSamples(self)
         val = round(self.BlockSize * self.SampleRate);
     end
@@ -64,15 +79,6 @@ methods
         val = rem(self.NumSamples - self.OverlapSamples, self.HopSizeSamples);
     end
 end
-
-
-methods (Access = protected)
-    function [out] = WOLA(self)
-        
-    end
-end
-
-
 
 end
 
