@@ -37,8 +37,12 @@ properties (Access = protected)
     TimeVector;
 end
 
+properties (Access = protected, Transient)
+    TimeDomainObject;
+end
+
 properties (Access = public)
-    FftSize = 512;;
+    FftSize = 512;
     WindowFunction = @(x) hann(x, 'periodic');
 end
 
@@ -46,68 +50,134 @@ end
 
 methods
     function [self] = STFT(varargin)
+        if ~nargin
+            varargin = {};
+        end
         self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
         self@Signal.AbstractClasses.AbstractBlockedSignal(varargin{:});
         
-        switch class(varargin{1})
-            case 'Signal.TimeDomain'
-                objTime = varargin{1};
-                
-                self.time2STFT(objTime);
-            case 'Signal.FrequencyDomain'
-                error('Not yet implemented');
-            case 'Signal.STFT'
-                error('Not yet implemented');
-            case 'Signal.PSD'
-                error('Not yet implemented');
-            case 'double'
-                self.Signal = varargin{1};
-                self.SampleRate = varargin{2};
-                
-                [self.NumSamples, self.NumBlocks] = size(self.Signal);
-                
-                self.FftSize = (self.NumSamples - 1) * 2;
-                self.Duration = self.FftSize / self.SampleRate;
-            otherwise
-                error('Signal class not recognized!');
+        if nargin
+            switch class(varargin{1})
+                case 'Signal.TimeDomain'
+                    objTime = varargin{1};
+                    
+                    self.SampleRate = objTime.SampleRate;
+                    
+                    self.NumSamples  = objTime.NumSamples;
+                    self.Duration    = objTime.Duration;
+                    self.NumChannels = objTime.NumChannels;
+                    
+                    self.TimeDomainObject = objTime;
+                case 'Signal.FrequencyDomain'
+                    error('Not yet implemented');
+                case 'Signal.STFT'
+                    self = varargin{1};
+                case 'Signal.PSD'
+                    error(...
+                        'SIGNAL:noValidTransform', ...
+                        'A PSD cannot be transformed into an STFT!' ...
+                        );
+                case 'double'
+                    self.Signal = varargin{1};
+                    self.SampleRate = varargin{2};
+                    
+                    [self.NumSamples, self.NumBlocks] = size(self.Signal);
+                    
+                    self.FftSize = (self.NumSamples - 1) * 2;
+                    self.Duration = self.FftSize / self.SampleRate;
+                otherwise
+                    error('Signal class not recognized!');
+            end
         end
     end
     
-    function [ha] = plot(self)
+    function [] = transform(self)
+        idxColumns = (0 : self.NumBlocks-1) * self.HopSizeSamples;
+        idxRows    = (1 : self.BlockSizeSamples).';
+        
+        % pad with zeros if necessary
+        timeDomainSignal = [...
+            self.TimeDomainObject.Signal; ...
+            zeros(self.HopSizeSamples - self.RemainingSamples, 1) ...
+            ];
+        
+        idxBlockedSignal = ...
+            idxRows(:, ones(1, self.NumBlocks)) + ...
+            idxColumns(ones(self.BlockSizeSamples, 1), :);
+        blockedSignal = timeDomainSignal(idxBlockedSignal);
+        
+        spectrogramData = ...
+            fft(diag(sparse(self.Window)) * blockedSignal, self.FftSize, 1);
+        
+        self.Signal     = spectrogramData(1:end/2+1, :);
+        self.TimeVector = ...
+            (idxColumns + self.BlockSizeSamples/2).' / self.SampleRate;
+    end
+    
+    function [ha] = plot(self, plotType)
+        if nargin < 2 || isempty(plotType)
+            plotType = 'magnitude';
+        end
+        plotType = validatestring(plotType, {'magnitude', 'phase'});
+        
+        self.transform();
+        
         ha = axes;
         
-        PSD = abs(self.Signal).^2;
-        PSD = (diag(sparse(self.PowerWeightingWindow)) * PSD) / ...
-            (self.SampleRate * norm(self.Window)^2);
-        
-        imagesc(...
-            ha, ...
-            self.TimeVector, ...
-            self.FrequencyVector, ...
-            10*log10(max(PSD, eps^2)) ...
-            );
-        axis xy;
-        hc = colorbar();
-        hc.Label.String = 'PSD in dB re. 1^2/Hz';
-        
-        title('Spectrogram of the Signal');
-        xlabel('Time in s');
-        ylabel('Frequency in Hz');
+        switch plotType
+            case 'magnitude'
+                PSD = abs(self.Signal).^2;
+                PSD = (diag(sparse(self.PowerWeightingWindow)) * PSD) / ...
+                    (self.SampleRate * norm(self.Window)^2);
+                
+                imagesc(...
+                    ha, ...
+                    self.TimeVector, ...
+                    self.FrequencyVector, ...
+                    10*log10(max(PSD, eps^2)) ...
+                    );
+                axis xy;
+                hc = colorbar();
+                hc.Label.String = 'PSD in dB re. 1^2/Hz';
+                
+                title('Spectrogram of the Signal');
+                xlabel('Time in s');
+                ylabel('Frequency in Hz');
+            case 'phase'
+                error('Not yet implemented');
+        end
     end
     
     function [] = sound(self)
-        objTime = Signal.TimeDomain(self);
-        objTime.sound();
+        if ~isempty(self.TimeDomainObject)
+            player = audioplayer(self.TimeDomainObject.Signal, self.SampleRate);
+            play(player);
+        else
+            objTime = Signal.TimeDomain(self);
+            objTime.sound();
+        end
     end
     
     function [] = soundsc(self)
-        objTime = Signal.TimeDomain(self);
-        objTime.soundsc();
+        if ~isempty(self.TimeDomainObject)
+            signalNorm = ...
+                self.TimeDomainObject.Signal / ...
+                max(abs(self.TimeDomainObject.Signal));
+            
+            player = audioplayer(signalNorm, self.SampleRate);
+            play(player);
+        else
+            objTime = Signal.TimeDomain(self);
+            objTime.soundsc();
+        end
+        
     end
     
     function [val] = get.Window(self)
         val = self.WindowFunction(self.BlockSizeSamples);
     end
+    
+    
     
     function [] = set.WindowFunction(self, windowFunction)
         validateattributes(windowFunction, ...
@@ -115,10 +185,7 @@ methods
             {'nonempty'} ...
             );
         
-        objTime = Signal.TimeDomain(self);
-        
         self.WindowFunction = windowFunction;
-        self.time2freq(objTime);
     end
     
     function [] = set.FftSize(self, fftSize)
@@ -128,10 +195,7 @@ methods
             'nonempty', 'nonnan', 'real', 'finite'} ...
             );
         
-        objTime = Signal.TimeDomain(self);
-        
         self.FftSize = fftSize;
-        self.time2freq(objTime);
     end
     
     
@@ -148,45 +212,9 @@ methods (Access = protected)
             ~isempty(self.Overlap) && ...
             ~isempty(self.BlockSize);
     end
-    
-    function [] = time2STFT(self, objTime)
-        self.SampleRate = objTime.SampleRate;
-        
-        self.NumSamples  = objTime.NumSamples;
-        self.Duration    = objTime.Duration;
-        self.NumChannels = objTime.NumChannels;
-        
-        idxColumns = (0 : self.NumBlocks-1) * self.HopSize;
-        idxRows    = (1 : self.BlockSizeSamples).';
-        
-        % pad with zeros
-        timeDomainSignal = [...
-            objTime.Signal; ...
-            zeros(self.HopSize - self.RemainingSamples, 1) ...
-            ];
-        
-        idxBlockedSignal = ...
-            idxRows(:, ones(1, self.NumBlocks)) + ...
-            idxColumns(ones(self.BlockSizeSamples, 1), :);
-        blockedSignal = timeDomainSignal(idxBlockedSignal);
-        
-        spectrogramData = ...
-            fft(diag(sparse(self.Window)) * blockedSignal, self.FftSize, 1);
-        
-        self.Signal     = spectrogramData(1:end/2+1, :);
-        self.TimeVector = ...
-            (idxColumns + self.BlockSizeSamples/2).' / self.SampleRate;
-    end
 end
 
-
-
-
-
-
-
 end
-
 
 
 % End of file: STFT.m
