@@ -66,6 +66,8 @@ methods
     
     function [ha] = plot(self)
         ha = axes;
+        yyaxis left;
+        
         plot(...
             ha, ...
             self.FrequencyVector, ...
@@ -77,6 +79,14 @@ methods
         title('Spectrum of the Frequency Domain Signal');
         xlabel('Frequency in Hz');
         ylabel('Magnitude in dB');
+        
+        yyaxis right;
+        plot(...
+            self.FrequencyVector, ...
+            unwrap(angle(self.Signal)) / pi * 180 ...
+            );
+        xlabel('Frequency in Hz');
+        ylabel('Unwrapped Phase in degree');
         
         if self.NumChannels > 1
             legendText = arrayfun(...
