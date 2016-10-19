@@ -31,9 +31,9 @@ properties (Access = protected, Dependent)
     RemainingSamples;
 end
 
-properties (Access = public, Abstract)
-    BlockSize;
-    Overlap;
+properties (Access = public)
+    BlockSize = 32e-3;
+    Overlap = 0.5;
 end
 
 
@@ -55,8 +55,7 @@ methods
            
             blockIndex = blockIndex + self.HopSizeSamples;
         end
-    end
-    
+    end    
     
     function [val] = get.BlockSizeSamples(self)
         val = round(self.BlockSize * self.SampleRate);
@@ -77,6 +76,26 @@ methods
     
     function [val] = get.RemainingSamples(self)
         val = rem(self.NumSamples - self.OverlapSamples, self.HopSizeSamples);
+    end
+    
+    
+    function [] = set.BlockSize(self, val)
+        validateattributes(val, ...
+            {'numeric'}, ...
+            {'scalar', 'positive', 'nonempty', 'nonnan', 'finite', 'real'} ...
+            );
+        
+        self.BlockSize = val;
+    end
+    
+    function [] = set.Overlap(self, val)
+        validateattributes(val, ...
+            {'numeric'}, ...
+            {'scalar', 'nonnegative', '>=', 0, '<=', 1, ...
+             'nonempty', 'nonnan', 'finite', 'real'} ...
+            );
+        
+        self.Overlap = val;
     end
 end
 
