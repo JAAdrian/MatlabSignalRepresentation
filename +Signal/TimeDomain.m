@@ -33,27 +33,34 @@ end
 
 methods
     function [self] = TimeDomain(varargin)
+        if ~nargin
+            varargin = {};
+        end
         self@Signal.AbstractClasses.AbstractSignal(varargin{:});
         
-        switch class(varargin{1})
-            case 'Signal.TimeDomain'
-                self = varargin{1};
-            case 'Signal.FrequencyDomain'
-                objFreq = varargin{1};
-                
-                self.freq2time(objFreq);
-            case 'Signal.STFT'
-                error('Not yet implemented');
-            case 'Signal.PSD'
-                error('Not yet implemented');
-            case 'double'
-                self.Signal     = varargin{1};
-                self.SampleRate = varargin{2};
-                
-                [self.NumSamples, self.NumChannels] = size(self.Signal);
-                self.Duration = self.NumSamples / self.SampleRate;
-            otherwise
-                error('Signal class not recognized!');
+        if nargin
+            switch class(varargin{1})
+                case 'Signal.TimeDomain'
+                    self = varargin{1};
+                case 'Signal.FrequencyDomain'
+                    objFreq = varargin{1};
+                    
+                    self.freq2time(objFreq);
+                case 'Signal.STFT'
+                    objSTFT = varargin{1};
+                    
+                    self.Stft2Time(objSTFT);
+                case 'Signal.PSD'
+                    error('Not yet implemented');
+                case 'double'
+                    self.Signal     = varargin{1};
+                    self.SampleRate = varargin{2};
+                    
+                    [self.NumSamples, self.NumChannels] = size(self.Signal);
+                    self.Duration = self.NumSamples / self.SampleRate;
+                otherwise
+                    error('Signal class not recognized!');
+            end
         end
     end
     
@@ -125,7 +132,24 @@ methods (Access = protected)
         
         [self.NumSamples, self.NumChannels] = size(self.Signal);
         self.Duration = self.NumSamples / self.SampleRate;
-    end    
+    end
+    
+    function [] = Stft2Time(self, objSTFT)
+        self.SampleRate = objSTFT.SampleRate;
+        
+        blockSizeSamples = round(objSTFT.BlockSize * objSTFT.SampleRate);
+        window = objSTFT.WindowFunction(blockSizeSamples);
+        
+        freqDomain = [objSTFT.Signal; conj(objSTFT.Signal(end-1:-1:2, :))];
+        timeDomain = ...
+            diag(sparse(window)) * ...
+            ifft(freqDomain, objSTFT.FftSize, 1, 'symmetric');
+        
+        self.Signal = objSTFT.WOLA(timeDomain);
+        
+        [self.NumSamples, self.NumChannels] = size(self.Signal);
+        self.Duration = self.NumSamples / self.SampleRate;
+    end
 end
 
 end

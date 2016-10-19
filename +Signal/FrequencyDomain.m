@@ -38,29 +38,34 @@ end
 
 methods
     function [self] = FrequencyDomain(varargin)
+        if ~nargin
+            varargin = {};
+        end
         self@Signal.AbstractClasses.AbstractFrequencySignal(varargin{:});
         
-        switch class(varargin{1})
-            case 'Signal.TimeDomain'
-                objTime = varargin{1};
-                
-                self.time2freq(objTime);
-            case 'Signal.FrequencyDomain'
-                self = varargin{1};
-            case 'Signal.STFT'
-                error('Not yet implemented');
-            case 'Signal.PSD'
-                error('Not yet implemented');
-            case 'double'
-                self.Signal = varargin{1};
-                self.SampleRate = varargin{2};
-                
-                [self.NumSamples, self.NumChannels] = size(self.Signal);
-                
-                self.FftSize = (self.NumSamples - 1) * 2;
-                self.Duration = self.FftSize / self.SampleRate;
-            otherwise
-                error('Signal class not recognized!');
+        if nargin
+            switch class(varargin{1})
+                case 'Signal.TimeDomain'
+                    objTime = varargin{1};
+                    
+                    self.time2freq(objTime);
+                case 'Signal.FrequencyDomain'
+                    self = varargin{1};
+                case 'Signal.STFT'
+                    error('Not yet implemented');
+                case 'Signal.PSD'
+                    error('Not yet implemented');
+                case 'double'
+                    self.Signal = varargin{1};
+                    self.SampleRate = varargin{2};
+                    
+                    [self.NumSamples, self.NumChannels] = size(self.Signal);
+                    
+                    self.FftSize = (self.NumSamples - 1) * 2;
+                    self.Duration = self.FftSize / self.SampleRate;
+                otherwise
+                    error('Signal class not recognized!');
+            end
         end
     end
     
