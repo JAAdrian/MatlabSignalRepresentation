@@ -181,6 +181,8 @@ methods (Static)
         end
         
         spec = mag .* exp(1j * phase);
+        spec = [spec; conj(spec(end-1:-1:2))];
+        
         ir = ifft(spec, 'symmetric');
     end
 end
