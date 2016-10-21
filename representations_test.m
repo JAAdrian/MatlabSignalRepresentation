@@ -69,17 +69,21 @@ objSTFT.Overlap   = 0.9;
 figure;
 objSTFT.plot();
 
-%% Instantiate a PSD object
+%% Instantiate an STFT object and plot a PSD
 objTime = Signal.TimeDomain(signal, sampleRate);
 
-objPSD = Signal.PSD(objTime);
-objPSD.BlockSize = 32e-3;
-objPSD.Overlap   = 0.5;
+objSTFT = Signal.STFT(objTime);
+objSTFT.BlockSize = 32e-3;
+objSTFT.Overlap   = 0.5;
 
 figure;
-objPSD.plot();
+objSTFT.plotPSD();
 
+psd = objSTFT.computePSD();
+ir  = Signal.TimeDomain.psd2Time(psd, 'minimum');
 
+figure;
+stem(ir)
 
 
 
