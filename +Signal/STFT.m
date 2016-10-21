@@ -125,6 +125,27 @@ methods
         frequencyVector = self.FrequencyVector;
     end
     
+    function [ha] = plotPSD(self)
+        self.transform();
+        psd = mean(abs(self.Signal).^2, 2);
+        
+        psd = self.PowerWeightingWindow .* psd / ...
+            (self.SampleRate * norm(self.Window)^2);
+        
+        ha = axes;
+        plot(...
+            ha, ...
+            self.FrequencyVector, ...
+            10*log10(max(psd, eps^2)) ...
+            );
+        grid on;
+        xlim([self.FrequencyVector(1), self.FrequencyVector(end)]);
+        
+        title('Power Spectral Density (PSD) of the Signal');
+        xlabel('Frequency in Hz');
+        ylabel('Magnitude in dB re. 1^2/Hz');
+    end
+    
     function [ha] = plot(self, plotType)
         if nargin < 2 || isempty(plotType)
             plotType = 'magnitude';
