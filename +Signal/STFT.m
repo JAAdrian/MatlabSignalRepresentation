@@ -81,10 +81,12 @@ methods
                     self.Signal = varargin{1};
                     self.SampleRate = varargin{2};
                     
-                    [self.NumSamples, self.NumBlocks] = size(self.Signal);
+                    self.NumSamples = size(self.Signal, 1);
                     
                     self.FftSize = (self.NumSamples - 1) * 2;
                     self.Duration = self.FftSize / self.SampleRate;
+                    
+                    self.TimeDomainObject = Signal.TimeDomain(self);
                 otherwise
                     error('Signal class not recognized!');
             end
