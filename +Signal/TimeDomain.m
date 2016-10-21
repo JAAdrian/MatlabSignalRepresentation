@@ -152,6 +152,39 @@ methods (Access = protected)
     end
 end
 
+methods (Static)
+    function [ir] = psd2Time(psd, phaseOption)
+        if nargin < 2 || isempty(phaseOption)
+            phaseOption = 'linear';
+        end
+        phaseOption = validatestring(phaseOption, {'linear', 'minimum'});
+        
+        lenPsd = length(psd);
+        
+        mag = sqrt(psd);
+        
+        switch phaseOption
+            case 'linear'
+                slope = lenPsd - 1;
+                omega = linspace(0, pi, lenPsd).';
+                phase = -slope * omega;
+            
+            case 'minimum'
+                logSpec = log(mag);
+                phase = -imag(hilbert(logSpec));
+            
+            otherwise
+                error(...
+                    'SIGNAL:phaseNotRecognized', ...
+                    'The phase option was not recognized.' ...
+                    );
+        end
+        
+        spec = mag .* exp(1j * phase);
+        ir = ifft(spec, 'symmetric');
+    end
+end
+
 end
 
 
