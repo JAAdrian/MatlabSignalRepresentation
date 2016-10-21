@@ -114,6 +114,15 @@ methods
             (idxColumns + self.BlockSizeSamples/2).' / self.SampleRate;
     end
     
+    function [psd, frequencyVector] = computePSD(self)
+        psd = mean(abs(self.Signal).^2, 2);
+        
+        psd = self.PowerWeightingWindow .* psd / ...
+            (self.SampleRate * norm(self.Window)^2);
+        
+        frequencyVector = self.FrequencyVector;
+    end
+    
     function [ha] = plot(self, plotType)
         if nargin < 2 || isempty(plotType)
             plotType = 'magnitude';
@@ -126,15 +135,15 @@ methods
         
         switch plotType
             case 'magnitude'
-                PSD = abs(self.Signal).^2;
-                PSD = (diag(sparse(self.PowerWeightingWindow)) * PSD) / ...
+                psd = abs(self.Signal).^2;
+                psd = (diag(sparse(self.PowerWeightingWindow)) * psd) / ...
                     (self.SampleRate * norm(self.Window)^2);
                 
                 imagesc(...
                     ha, ...
                     self.TimeVector, ...
                     self.FrequencyVector, ...
-                    10*log10(max(PSD, eps^2)) ...
+                    10*log10(max(psd, eps^2)) ...
                     );
                 axis xy;
                 hc = colorbar();
