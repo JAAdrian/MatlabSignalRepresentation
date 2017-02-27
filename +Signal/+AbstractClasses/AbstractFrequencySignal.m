@@ -11,7 +11,7 @@ classdef AbstractFrequencySignal < Signal.AbstractClasses.AbstractSignal
 %	doThis - <description>
 %	doThat - <description>
 %
-% Author :  J.-A. Adrian (JA) <jens-alrik.adrian AT jade-hs.de>
+% Author :  J.-A. Adrian (JA) <jensalrik.adrian AT gmail.com>
 % Date   :  17-Oct-2016 11:43:58
 %
 

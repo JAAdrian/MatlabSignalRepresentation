@@ -11,7 +11,7 @@ classdef AbstractBlockedSignal < Signal.AbstractClasses.AbstractSignal
 %	doThis - <description>
 %	doThat - <description>
 %
-% Author :  J.-A. Adrian (JA) <jens-alrik.adrian AT jade-hs.de>
+% Author :  J.-A. Adrian (JA) <jensalrik.adrian AT gmail.com>
 % Date   :  15-Oct-2016 00:21:56
 %
 

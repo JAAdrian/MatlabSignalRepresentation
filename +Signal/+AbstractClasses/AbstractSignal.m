@@ -11,7 +11,7 @@ classdef AbstractSignal < handle
 %	doThis - <description>
 %	doThat - <description>
 %
-% Author :  J.-A. Adrian (JA) <jens-alrik.adrian AT jade-hs.de>
+% Author :  J.-A. Adrian (JA) <jensalrik.adrian AT gmail.com>
 % Date   :  29-Sep-2016 17:35:47
 %
 
